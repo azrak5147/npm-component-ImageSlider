@@ -28,6 +28,7 @@ interface ImageSliderProps {
   showIndexCounter?: boolean;
   aspectRatio?: string;
   isActiveZooming?: boolean;
+  onImagePress?: (item: ImageItem) => void;
 }
 
 const { width } = Dimensions.get("window");
@@ -43,6 +44,7 @@ const ImageSliderComponent: React.FC<ImageSliderProps> = ({
   showIndexCounter = false,
   aspectRatio = "430 / 224",
   isActiveZooming = false,
+  onImagePress,
 }) => {
   const scrollRef = useRef<ScrollView>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -177,19 +179,21 @@ const ImageSliderComponent: React.FC<ImageSliderProps> = ({
                   overflow: "hidden",
                 }}
               >
-                {isActiveZooming ? (
-                  <TouchableOpacity onPress={() => openModalAtIndex(realIndex)}>
-                    <Image
-                      source={{ uri: img.images }}
-                      style={[styles.image, { aspectRatio: parsedAspectRatio }]}
-                    />
-                  </TouchableOpacity>
-                ) : (
+                <TouchableOpacity
+                  activeOpacity={0.9}
+                  onPress={() => {
+                    if (onImagePress) {
+                      onImagePress(img);
+                    } else if (isActiveZooming) {
+                      openModalAtIndex(realIndex);
+                    }
+                  }}
+                >
                   <Image
                     source={{ uri: img.images }}
                     style={[styles.image, { aspectRatio: parsedAspectRatio }]}
                   />
-                )}
+                </TouchableOpacity>
               </View>
             );
           })}
