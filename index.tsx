@@ -16,7 +16,7 @@ import ZoomableImage from "./ZoomableImage";
 
 interface ImageItem {
   id: number;
-  images: string;
+  image: string;
 }
 
 interface ImageSliderProps {
@@ -29,14 +29,15 @@ interface ImageSliderProps {
   aspectRatio?: string;
   isActiveZooming?: boolean;
   onImagePress?: (item: ImageItem) => void;
+  mainSlideWidth?:number;
 }
 
 const { width } = Dimensions.get("window");
-const mainSlideWidth = width * 1;
 const mainSpacing = 16;
 
 const ImageSliderComponent: React.FC<ImageSliderProps> = ({
   images,
+  mainSlideWidth=width,
   autoPlay = true,
   dotpagination,
   numberpagination,
@@ -153,6 +154,8 @@ const ImageSliderComponent: React.FC<ImageSliderProps> = ({
     setModalCurrentIndex(index);
   };
 
+  const slideSize = mainSlideWidth + mainSpacing;
+
   return (
     <>
       <View style={styles.container}>
@@ -160,12 +163,9 @@ const ImageSliderComponent: React.FC<ImageSliderProps> = ({
           ref={scrollRef}
           horizontal
           showsHorizontalScrollIndicator={false}
-          snapToInterval={mainSlideWidth + mainSpacing}
+          snapToInterval={slideSize}
           decelerationRate="fast"
           onMomentumScrollEnd={onMomentumScrollEnd}
-          contentContainerStyle={{
-            paddingHorizontal: (width - mainSlideWidth) / 2,
-          }}
         >
           {loopImages.map((img, idx) => {
             const realIndex =
@@ -190,7 +190,7 @@ const ImageSliderComponent: React.FC<ImageSliderProps> = ({
                   }}
                 >
                   <Image
-                    source={{ uri: img.images }}
+                    source={{ uri: img.image }}
                     style={[styles.image, { aspectRatio: parsedAspectRatio }]}
                   />
                 </TouchableOpacity>
@@ -284,7 +284,7 @@ const ImageSliderComponent: React.FC<ImageSliderProps> = ({
               {loopImages.map((img, idx) => (
                 <View key={idx} style={styles.modalImageContainer}>
                   <ZoomableImage
-                    uri={img.images}
+                    uri={img.image}
                     aspectRatio={parsedAspectRatio}
                     // onZoomChange={setIsZoomed}
                   />
