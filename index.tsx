@@ -30,6 +30,7 @@ interface ImageSliderProps {
   isActiveZooming?: boolean;
   onImagePress?: (item: ImageItem) => void;
   mainSlideWidth?:number;
+  onImageError?: (errorIndex: number) => void;
 }
 
 const { width } = Dimensions.get("window");
@@ -46,6 +47,7 @@ const ImageSliderComponent: React.FC<ImageSliderProps> = ({
   aspectRatio = "430 / 224",
   isActiveZooming = false,
   onImagePress,
+  onImageError
 }) => {
   const scrollRef = useRef<ScrollView>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -54,7 +56,7 @@ const ImageSliderComponent: React.FC<ImageSliderProps> = ({
   const modalScrollRef = useRef<ScrollView>(null);
   const [modalCurrentIndex, setModalCurrentIndex] = useState(0);
   const [isZoomed, setIsZoomed] = useState(false);
-
+const [errorIndexes, setErrorIndexes] = useState<number[]>([]);
   const loopImages =
     images.length > 1
       ? [images[images.length - 1], ...images, images[0]]
@@ -192,6 +194,13 @@ const ImageSliderComponent: React.FC<ImageSliderProps> = ({
                   <Image
                     source={{ uri: img.image }}
                     style={[styles.image, { aspectRatio: parsedAspectRatio }]}
+                      onError={() => {
+                      setErrorIndexes(prev => [...prev, idx]);
+
+                      if (onImageError) {
+                        onImageError(idx);
+                      }
+                    }}
                   />
                 </TouchableOpacity>
               </View>
