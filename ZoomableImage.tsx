@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Image, View, Dimensions } from "react-native";
+import { Image, View, Dimensions, ImageSourcePropType } from "react-native";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Animated, {
   useSharedValue,
@@ -12,6 +12,7 @@ interface ZoomableImageProps {
   uri: string;
   aspectRatio: number;
   onZoomChange?: (zoomed: boolean) => void;
+  defaultImage?: ImageSourcePropType;
 }
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
@@ -20,6 +21,7 @@ const ZoomableImage: React.FC<ZoomableImageProps> = ({
   uri,
   aspectRatio,
   onZoomChange,
+  defaultImage,
 }) => {
   const scale = useSharedValue(1);
   const translateX = useSharedValue(0);
@@ -30,6 +32,8 @@ const ZoomableImage: React.FC<ZoomableImageProps> = ({
 
   const imageWidth = SCREEN_WIDTH;
   const imageHeight = imageWidth / aspectRatio;
+
+  const [hasError, setHasError] = useState(false);
 
   const getBound = (value: number, max: number) => {
     "worklet";
@@ -123,6 +127,11 @@ const ZoomableImage: React.FC<ZoomableImageProps> = ({
     panGesture
   );
 
+   const imageSource: ImageSourcePropType = hasError
+    ? (defaultImage ?? require('./assets/default-placeholder.webp'))
+    : { uri };
+
+
   return (
     <View
       style={{
@@ -135,12 +144,13 @@ const ZoomableImage: React.FC<ZoomableImageProps> = ({
       <GestureDetector gesture={composedGesture}>
         <Animated.View style={animatedStyle}>
           <Image
-            source={{ uri }}
+            source={imageSource}
             style={{
               width: "100%",
               aspectRatio,
             }}
             resizeMode="contain"
+            onError={() => setHasError(true)}
           />
         </Animated.View>
       </GestureDetector>

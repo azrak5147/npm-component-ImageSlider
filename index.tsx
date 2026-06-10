@@ -10,6 +10,7 @@ import {
   NativeSyntheticEvent,
   NativeScrollEvent,
   Modal,
+  ImageSourcePropType,
 } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import ZoomableImage from "./ZoomableImage";
@@ -29,8 +30,9 @@ interface ImageSliderProps {
   aspectRatio?: string;
   isActiveZooming?: boolean;
   onImagePress?: (item: ImageItem) => void;
-  mainSlideWidth?:number;
+  mainSlideWidth?: number;
   onImageError?: (errorIndex: number) => void;
+  defaultImage?: ImageSourcePropType;
 }
 
 const { width } = Dimensions.get("window");
@@ -38,7 +40,7 @@ const mainSpacing = 16;
 
 const ImageSliderComponent: React.FC<ImageSliderProps> = ({
   images,
-  mainSlideWidth=width,
+  mainSlideWidth = width,
   autoPlay = true,
   dotpagination,
   numberpagination,
@@ -47,7 +49,8 @@ const ImageSliderComponent: React.FC<ImageSliderProps> = ({
   aspectRatio = "430 / 224",
   isActiveZooming = false,
   onImagePress,
-  onImageError
+  defaultImage,
+  onImageError,
 }) => {
   const scrollRef = useRef<ScrollView>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -56,7 +59,7 @@ const ImageSliderComponent: React.FC<ImageSliderProps> = ({
   const modalScrollRef = useRef<ScrollView>(null);
   const [modalCurrentIndex, setModalCurrentIndex] = useState(0);
   const [isZoomed, setIsZoomed] = useState(false);
-const [errorIndexes, setErrorIndexes] = useState<number[]>([]);
+  const [errorIndexes, setErrorIndexes] = useState<number[]>([]);
   const loopImages =
     images.length > 1
       ? [images[images.length - 1], ...images, images[0]]
@@ -137,7 +140,7 @@ const [errorIndexes, setErrorIndexes] = useState<number[]>([]);
   }, [zoomModalVisible]);
 
   const onModalMomentumScrollEnd = (
-    e: NativeSyntheticEvent<NativeScrollEvent>
+    e: NativeSyntheticEvent<NativeScrollEvent>,
   ) => {
     if (images.length <= 1) return;
     const offsetX = e.nativeEvent.contentOffset.x;
@@ -192,10 +195,15 @@ const [errorIndexes, setErrorIndexes] = useState<number[]>([]);
                   }}
                 >
                   <Image
-                    source={{ uri: img.image }}
+                    source={
+                      errorIndexes.includes(idx)
+                        ? (defaultImage ??
+                          require("./assets/default-placeholder.webp"))
+                        : { uri: img.image }
+                    }
                     style={[styles.image, { aspectRatio: parsedAspectRatio }]}
-                      onError={() => {
-                      setErrorIndexes(prev => [...prev, idx]);
+                    onError={() => {
+                      setErrorIndexes((prev) => [...prev, idx]);
 
                       if (onImageError) {
                         onImageError(idx);
@@ -295,6 +303,7 @@ const [errorIndexes, setErrorIndexes] = useState<number[]>([]);
                   <ZoomableImage
                     uri={img.image}
                     aspectRatio={parsedAspectRatio}
+                    defaultImage={defaultImage}
                     // onZoomChange={setIsZoomed}
                   />
                 </View>
